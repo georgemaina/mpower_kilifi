@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mpower/screens/globals.dart' as globals;
 
-
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({Key? key}) : super(key: key);
 

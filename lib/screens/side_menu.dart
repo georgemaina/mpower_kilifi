@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'defaulters.dart';
+import 'household_register.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({
@@ -13,7 +14,7 @@ class SideMenu extends StatelessWidget {
       child: ListView(
         children: [
           DrawerHeader(
-            child: Image.asset("assets/images/logo.png"),
+            child: Image.asset("assets/icons/icon.png"),
           ),
           DrawerListTile(
             title: "Dashboard",
@@ -33,7 +34,12 @@ class SideMenu extends StatelessWidget {
           DrawerListTile(
             title: "Household Mapping",
             svgSrc: "assets/icons/menu_task.svg",
-            press: () {},
+            press: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context)=>HouseholdRegister())
+              );
+            },
           ),
           DrawerListTile(
             title: "Notification",

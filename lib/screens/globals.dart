@@ -8,10 +8,9 @@ String serviceDefaulted="";
 String chw="";
 bool healthWorker=false;
 bool CU=false;
+String ip="192.168.43.6";
 
-//String url="http://40.71.71.47/mpower/data/getDatafunctions.php?task=";
-String url="http://192.168.4.185:8888/mpower/data/getDataFunctions.php?task=";
-
+String url="http://"+ip+":8888/mpower/data/getDataFunctions.php?task=";
 
 //Screening Variables
 String firstname="";

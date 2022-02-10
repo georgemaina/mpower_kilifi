@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'defaulters.dart';
 import 'household_register.dart';
+import 'mappingVisitType.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({
@@ -37,7 +38,7 @@ class SideMenu extends StatelessWidget {
             press: () {
               Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context)=>HouseholdRegister())
+                  MaterialPageRoute(builder: (context)=>MappingVisitType())
               );
             },
           ),

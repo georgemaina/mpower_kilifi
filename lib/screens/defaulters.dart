@@ -1,3 +1,6 @@
+// import 'dart:html';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:mpower/constants.dart';
 import 'dart:convert';
@@ -72,6 +75,7 @@ class Client {
     required this.contacted,
   });
 
+
   factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
       ID: json["ID"],
@@ -95,6 +99,19 @@ class MainListView extends StatefulWidget {
 
 class _MainListViewState extends State {
   final String apiURL =globals.url.toString() + 'getDefaulterList';
+  static const _GET_ALL_ACTION = 'GET_ALL';
+   late List<Client> _clients;
+
+  void initState() {
+    super.initState();
+    _clients = [];
+    // _isUpdating = false;
+    // _titleProgress = widget.title;
+    // _scaffoldKey = GlobalKey(); // key to get the context to show a SnackBar
+    // _firstNameController = TextEditingController();
+    // _lastNameController = TextEditingController();
+    _getDefaulters();
+  }
 
   Future<List<Client>> fetchClients() async {
     // print(apiURL);
@@ -120,6 +137,41 @@ class _MainListViewState extends State {
         builder: (context) => SecondScreenState(dataHolder.toString())));
   }
 
+  static List<Client> parseResponse(String responseBody) {
+    final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
+    return parsed.map<Client>((json) => Client.fromJson(json)).toList();
+  }
+
+  static Future<List<Client>> _getClients() async {
+    // try {
+      final String apiURL =globals.url.toString() + 'getDefaulterList';
+      var map = Map<String, dynamic>();
+      map['action'] = _GET_ALL_ACTION;
+      final response =  await http.get(Uri.parse(apiURL));
+      print('getDefaulterList Response: ${response.body}');
+      if (200 == response.statusCode) {
+        List<Client> list = parseResponse(response.body);
+        return list;
+      } else {
+        throw Exception('Failed to load data from Server.');
+
+      }
+    // } catch (e) {
+    //   return List<Client>(); // return an empty list on exception/error
+    // }
+  }
+
+  _getDefaulters() {
+    // _showProgress('Loading Employees...');
+    _getClients().then((clients) {
+      setState(() {
+        _clients = clients;
+      });
+      // _showProgress(widget.title); // Reset the title...
+      print("Length ${clients.length}");
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -135,51 +187,48 @@ class _MainListViewState extends State {
 
 
         // print(!snapshot.data.names.length);
-        return ListView(
-          children: snapshot.data!
-              .map((data) => Column(
-            children: <Widget>[
-              GestureDetector(
-                onTap: () {
-                  navigateToNextActivity(context, data.ID);
-                },
-                child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      // if (Responsive.isDesktop(context))
-                      //   Expanded(
-                      //     // default flex = 1
-                      //     // and it takes 1/6 part of the screen
-                      //     child: SideMenu(),
-                      //   ),
-
-                      Padding(
-                          padding: EdgeInsets.fromLTRB(5, 5, 0, 5),
-                          child: Text(
-                              '${data.ID}  ${data.names}',
-                              style: TextStyle(fontSize: 13),
-                              textAlign: TextAlign.left)),
-                      Expanded(
-                          child:Padding(
-                            padding: EdgeInsets.fromLTRB(5, 5, 0, 5),
-                            child: Text(
-                              ' - Service Defaulted ${data.serviceDefaulted}',
-                              style: TextStyle(fontSize: 13,color:Colors.yellow),
-                              textAlign: TextAlign.left,
-                            ),
-                          )
-                      ),
-
-                    ]),
-
-              ),
-              Divider(color: Colors.black),
-            ],
-          ))
-              .toList(),
-
+        return SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child:DataTable(
+              columns: [
+                DataColumn(label: Text('ID')),
+                DataColumn(label: Text('Names')),
+                DataColumn(label: Text('Service')),
+                DataColumn(label: Text('Village')),
+              ],
+              rows: _clients
+                  .map((client) => DataRow(cells:[
+                DataCell(
+                  Text(client.ID.toString()),
+                  onTap: () {
+                    navigateToNextActivity(context, client.ID);
+                  },
+                ),
+                DataCell(
+                  Text(client.names,style: TextStyle(color: Colors.amber),),
+                  onTap: () {
+                    navigateToNextActivity(context, client.ID);
+                  },
+                ),
+                DataCell(
+                    Text(client.serviceDefaulted,style: TextStyle(color: Colors.amber),),
+                  onTap: () {
+                    navigateToNextActivity(context, client.ID);
+                  },
+                ),
+                DataCell(
+                    Text(client.village),
+                  onTap: () {
+                    navigateToNextActivity(context, client.ID);
+                  },
+                ),
+              ]),
+            ).toList(),
+          ),
+        )
         );
-
       },
     );
   }
@@ -206,12 +255,14 @@ class SecondScreen extends State<SecondScreenState> {
 
   String contacted="";
   TextEditingController reasonNotContacted = TextEditingController();
+  TextEditingController serialNo = TextEditingController();
   String isDefaulter="";
   String serviceLocation="";
   String serviceDate="";
   String referTo="";
   String dateContacted ="";
   String facility="";
+  String referfacility="";
   String mflcode="";
 
 
@@ -298,6 +349,7 @@ class SecondScreen extends State<SecondScreenState> {
 
   Future updateRegister() async {
     String url = globals.url.toString() +"updateDefaulter";
+
     var response = await http.post(Uri.parse(url), body: {
       "contacted":contacted,
       "reasonNotContacted": reasonNotContacted.text,
@@ -305,6 +357,7 @@ class SecondScreen extends State<SecondScreenState> {
       "serviceLocation": serviceLocation,
       "serviceDate": serviceDate,
       "referTo": facility,
+      "mohSerialNo":serialNo,
       "dateContacted": dateContacted,
       "ID":idHolder,
     });
@@ -357,7 +410,8 @@ class SecondScreen extends State<SecondScreenState> {
                 icon: Icon(Icons.arrow_back),
                 // onPressed: () => Navigator.pop(context, false),
                 onPressed: () =>Navigator.push(context, MaterialPageRoute(builder: (context)=>Defaulters())),
-              )),
+              )
+          ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               Navigator.push(context,MaterialPageRoute(builder: (context) => Register()));
@@ -539,28 +593,48 @@ class SecondScreen extends State<SecondScreenState> {
                                                 ],
                                               ),
                                             ),
-                                            SizedBox(height:5.0),
+                                            // SizedBox(height:5.0),
                                             Visibility(
                                               maintainAnimation: true,
                                               maintainState: true,
                                               visible: referToVisible,
-                                              child: DropdownSearch<FacilityModel>(
-                                                // items: [
-                                                //   FacilityModel(facilityname: "Offline name1", mflcode: 999),
-                                                //   FacilityModel(facilityname: "Offline name2", mflcode: 101)
-                                                // ],
-                                                maxHeight: 300,
-                                                onFind:(filter)=>getFacilities(filter),
-                                                dropdownSearchDecoration: InputDecoration(
-                                                  labelText: "Refer patient to Facility",
-                                                  contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
-                                                  border: OutlineInputBorder(),
-                                                ),
-                                                onChanged: (value){
-                                                  mflcode=value!.mflcode.toString();
-                                                  facility=value.facilityname.toString();
-                                                },
-                                                showSearchBox: true,
+                                              child: Column(
+                                                children: [
+                                                  DropdownSearch<FacilityModel>(
+                                                      maxHeight: 300,
+                                                    onFind:(filter)=>getFacilities(filter),
+                                                    dropdownSearchDecoration: InputDecoration(
+                                                      labelText: "Refer patient to Facility",
+                                                      contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
+                                                      border: OutlineInputBorder(),
+                                                    ),
+                                                    onChanged: (value){
+                                                      mflcode=value!.mflcode.toString();
+                                                      referfacility=value.facilityname;
+                                                    },
+                                                    showSearchBox: true,
+                                                  ),
+                                                  SizedBox(height:5.0),
+                                                  TextFormField(
+                                                    controller: serialNo,
+                                                    decoration: InputDecoration(
+                                                      hintText: 'MOH Serial No',
+                                                      // suffixIcon: Icon(Icons.email),
+                                                      border: OutlineInputBorder(
+                                                        borderRadius: BorderRadius.circular(10.0),
+                                                      ),
+                                                    ),
+                                                    validator: (value) {
+                                                      if(referfacility!="") {
+                                                        if (value == null ||
+                                                            value.isEmpty) {
+                                                          return 'Please enter MOH Serial No';
+                                                        }
+                                                      }
+                                                      return null;
+                                                    },
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                             SizedBox(height: 10.0),
@@ -576,6 +650,7 @@ class SecondScreen extends State<SecondScreenState> {
                                                         color: Colors.white
                                                     )),
                                                 onPressed: (){
+                                                  print(serialNo);
                                                   this.submit();
 
                                                 },

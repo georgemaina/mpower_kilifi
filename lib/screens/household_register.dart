@@ -10,6 +10,7 @@ import 'package:mpower/constants.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:dropdown_search/dropdown_search.dart';
+import 'package:intl/intl.dart';
 import 'package:mpower/screens/dashboard.dart';
 
 class HouseholdRegister extends StatefulWidget {
@@ -22,22 +23,33 @@ class HouseholdRegister extends StatefulWidget {
 class _HouseholdRegisterState extends State<HouseholdRegister> {
   // String _myActivity;
   // String _myActivityResult;
-  TextEditingController names = TextEditingController();
-  TextEditingController age = TextEditingController();
-  TextEditingController sex = TextEditingController();
+  static final DateTime now = DateTime.now();
+  static final DateFormat formatter = DateFormat('yyyy-MM-dd H:m:s');
+  final String strDate = formatter.format(now);
+
+  // String dateContacted =strDate;
+  TextEditingController mothersName = TextEditingController();
+  TextEditingController chuName = TextEditingController();
+  TextEditingController hhNo = TextEditingController();
+  TextEditingController yearBirth = TextEditingController();
+  // TextEditingController delivered = TextEditingController();
+  TextEditingController dateDelivered = TextEditingController();
+  String deliveryPlace ="";
+  String sex ="";
+  TextEditingController weightAtBirth = TextEditingController();
+  String supportGroup = "";
+  String married = "";
+  TextEditingController spouseName = TextEditingController();
   TextEditingController spouseContact = TextEditingController();
-  TextEditingController spouse = TextEditingController();
-  TextEditingController contacts = TextEditingController();
-  TextEditingController chvName = TextEditingController();
-  TextEditingController deliveryDate = TextEditingController();
-  TextEditingController birthweight = TextEditingController();
-  TextEditingController othersContact = TextEditingController();
-  TextEditingController notMarried = TextEditingController();
+  TextEditingController otherName = TextEditingController();
+  TextEditingController otherContact = TextEditingController();
+
   String delivered="Yes";
   bool showdeliveryOptions=false;
   bool kmc=false;
   bool isMarried=false;
   bool isOther=false;
+  String deliveryDate = "";
 
 
   final formKey =new GlobalKey<FormState>();
@@ -49,17 +61,22 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
     // _myActivityResult = '';
   }
 
-  Future registerDefaulter()async {
-    String url = globals.url.toString() + "registerDefaulter";
+  Future registerHousehold()async {
+    String url = globals.url.toString() + "registerHousehold";
     var response = await http.post(Uri.parse(url), body: {
-      "names": names.text,
-      "age": age.text,
-      "sex": sex.text,
-      "serviceDefaulted": globals.serviceDefaulted,
-      "village": spouse.text,
-      "guardian": spouseContact.text,
-      "contacts": contacts.text,
-      "chvName": chvName.text,
+      "dateContacted": strDate,
+      "mothersName": mothersName.text,
+      "chuName": chuName.text,
+      "hhNo": hhNo.text,
+      "dateDelivered": dateDelivered.text,
+      "sex": sex,
+      "weightAtBirth": weightAtBirth.text,
+      "supportGroup": supportGroup,
+      "married": married,
+      "spouseName": spouseName,
+      "spouseContact": spouseContact,
+      "otherName": otherName,
+      "otherContact": otherContact,
     });
 
     var data=jsonDecode(response.body);
@@ -82,7 +99,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
      //   _myActivityResult = _myActivity;
      // });
 
-      this.registerDefaulter();
+      this.registerHousehold();
 
       // print('Printing the login data.');
       // print('Mobile: ${_data.username}');
@@ -127,7 +144,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                     style: TextStyle(fontSize: 14.0,fontWeight: FontWeight.bold,color:Colors.greenAccent ),),
                   SizedBox(height: 10.0,),
                   TextFormField(
-                    controller: names,
+                    controller: mothersName,
                     decoration: InputDecoration(
                       hintText: 'mothers Names',
                       // suffixIcon: Icon(Icons.email),
@@ -145,7 +162,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                   SizedBox(height: 10.0,),
                   TextFormField(
                     obscureText: false,
-                    controller: age,
+                    controller: chuName,
                     decoration: InputDecoration(
                       hintText: 'CHU Name',
                       // suffixIcon: Icon(Icons.visibility_off),
@@ -163,7 +180,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                   SizedBox(height: 10.0,),
                   TextFormField(
                     obscureText: false,
-                    controller: age,
+                    controller: hhNo,
                     decoration: InputDecoration(
                       hintText: 'HH No',
                       // suffixIcon: Icon(Icons.visibility_off),
@@ -181,7 +198,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                   SizedBox(height: 10.0,),
                   TextFormField(
                     obscureText: false,
-                    controller: age,
+                    controller: yearBirth,
                     decoration: InputDecoration(
                       hintText: 'Year of Birth',
                       // suffixIcon: Icon(Icons.visibility_off),
@@ -196,116 +213,6 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                       return null;
                     },
                   ),
-                  SizedBox(height:10.0),
-                  FormBuilderRadioGroup(
-                      name: 'contacted',
-                      options: [
-                        FormBuilderFieldOption(value: 'Yes'),
-                        FormBuilderFieldOption(value: 'No'),
-                      ],
-                      decoration: InputDecoration(
-                        labelText: 'Delivered',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10.0),
-                        ),
-                      ),
-                      onChanged: (val) {
-                        setState(() {
-                          globals.sex = val.toString();
-                          if(val=='Yes'){
-                            delivered="Yes";
-                            showdeliveryOptions=true;
-                          }else{
-                            delivered="No";
-                            showdeliveryOptions=false;
-                          }
-                          print(val.toString());
-                        });
-                      }
-                  ),
-                  SizedBox(height:10.0),
-                  Visibility(
-                    maintainAnimation: true,
-                    maintainState: true,
-                    visible: showdeliveryOptions,
-                    child: Column(
-                      crossAxisAlignment:CrossAxisAlignment.start,
-                      children: [
-                        TextFormField(
-                          controller: deliveryDate,
-                          decoration: InputDecoration(
-                            hintText: 'Delivery Date',
-                            // suffixIcon: Icon(Icons.email),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height:10.0),
-                        DropdownSearch(
-                          items: [
-                            "Male",
-                            "Female"
-                          ],
-                          mode: Mode.MENU,
-                          dropdownSearchDecoration: InputDecoration(
-                            hintText: "Sex",
-                            labelText: "Sex",
-                            contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
-                            border: OutlineInputBorder(),
-                          ),
-                          onChanged: (value){
-                            // gathering.text=value.toString();
-                          },
-                        ),
-                        SizedBox(height:10.0),
-                        TextFormField(
-                          controller: deliveryDate,
-                          decoration: InputDecoration(
-                            hintText: 'Delivery Date',
-                            // suffixIcon: Icon(Icons.email),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                          ),
-                        ),
-                        SizedBox(height:10.0),
-                        FormBuilderRadioGroup(
-                            name: 'Sex',
-                            options: [
-                              FormBuilderFieldOption(value: 'Male'),
-                              FormBuilderFieldOption(value: 'Female'),
-                            ],
-                            decoration: InputDecoration(
-                              labelText: 'Sex',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                            ),
-                            onChanged: (val) {
-
-                            }
-                        ),
-                        SizedBox(height:10.0),
-                        TextFormField(
-                            controller: birthweight,
-                            decoration: InputDecoration(
-                              hintText: 'Weight at Birth',
-                              // suffixIcon: Icon(Icons.email),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                            ),
-                            onChanged: (val) {
-                              if(int.parse(val)>2500){
-                                kmc=true;
-                              }else{
-                                kmc=false;
-                              }
-                            }
-                        ),
-                      ],
-                    ),),
                   SizedBox(height:10.0),
                   FormBuilderRadioGroup(
                       name: 'married',
@@ -341,7 +248,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                       crossAxisAlignment:CrossAxisAlignment.start,
                       children: [
                         TextFormField(
-                          controller: spouse,
+                          controller: spouseName,
                           decoration: InputDecoration(
                             hintText: 'Spouse Name',
                             // suffixIcon: Icon(Icons.email),
@@ -363,6 +270,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                         ),
                       ],
                     ),),
+                  SizedBox(height:10.0),
                   Visibility(
                     maintainAnimation: true,
                     maintainState: true,
@@ -371,9 +279,9 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                       crossAxisAlignment:CrossAxisAlignment.start,
                       children: [
                         TextFormField(
-                          controller: notMarried,
+                          controller: otherName,
                           decoration: InputDecoration(
-                            hintText: 'Not Married/Other',
+                            hintText: 'Next of Kin/Guardian',
                             // suffixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
@@ -382,14 +290,124 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                         ),
                         SizedBox(height:10.0),
                         TextFormField(
-                          controller: othersContact,
+                          controller: otherContact,
                           decoration: InputDecoration(
-                            hintText: 'Others Contact',
+                            hintText: 'Contacts',
                             // suffixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                           ),
+                        ),
+                      ],
+                    ),),
+                  SizedBox(height:10.0),
+                  FormBuilderRadioGroup(
+                      name: 'contacted',
+                      options: [
+                        FormBuilderFieldOption(value: 'Yes'),
+                        FormBuilderFieldOption(value: 'No'),
+                      ],
+                      decoration: InputDecoration(
+                        labelText: 'Delivered',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                      ),
+                      onChanged: (val) {
+                        setState(() {
+                          globals.sex = val.toString();
+                          if(val=='Yes'){
+                            delivered="Yes";
+                            showdeliveryOptions=true;
+                          }else{
+                            delivered="No";
+                            showdeliveryOptions=false;
+                          }
+                          print(val.toString());
+                        });
+                      }
+                  ),
+                  SizedBox(height:10.0),
+                  Visibility(
+                    maintainAnimation: true,
+                    maintainState: true,
+                    visible: showdeliveryOptions,
+                    child: Column(
+                      crossAxisAlignment:CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 10.0),
+                        FormBuilderDateTimePicker(
+                          name: 'deliveryDate',
+                          onChanged: (value){
+                            deliveryDate=value.toString();
+                            print(value.toString());
+                          },
+                          inputType: InputType.date,
+                          format: DateFormat('yyyy-MM-dd'),
+                          lastDate:DateTime.now(),
+                          decoration: InputDecoration(
+                            labelText: 'Date received service',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
+                          ),
+                          //initialTime: TimeOfDay(hour: 8, minute: 0),
+                          //initialValue: DateTime.now(),
+                          enabled: true,
+
+                        ),
+                        SizedBox(height:10.0),
+                        DropdownSearch(
+                          items: [
+                            "Home",
+                            "Health Facility"
+                          ],
+                          mode: Mode.MENU,
+                          dropdownSearchDecoration: InputDecoration(
+                            hintText: "deliveryPlace",
+                            labelText: "deliveryPlace",
+                            contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value){
+                            // gathering.text=value.toString();
+                          },
+                        ),
+                        SizedBox(height:10.0),
+                        DropdownSearch(
+                          items: [
+                            "Male",
+                            "Female"
+                          ],
+                          mode: Mode.MENU,
+                          dropdownSearchDecoration: InputDecoration(
+                            hintText: "Sex",
+                            labelText: "Sex",
+                            contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value){
+                            // gathering.text=value.toString();
+                          },
+                        ),
+                        SizedBox(height:10.0),
+                        TextFormField(
+                            controller: weightAtBirth,
+                            decoration: InputDecoration(
+                              hintText: 'Weight at Birth',
+                              // suffixIcon: Icon(Icons.email),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                            ),
+                            onChanged: (val) {
+                              if(int.parse(val)>2500){
+                                kmc=true;
+                              }else{
+                                kmc=false;
+                              }
+                            }
                         ),
                       ],
                     ),),
@@ -405,8 +423,8 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                             color: Colors.white
                         )),
                     onPressed: (){
-                      print(names.text);
-                      print(chvName.text);
+                      print(mothersName.text);
+                      print(chuName.text);
                       this.submit();
                     },
                   ),

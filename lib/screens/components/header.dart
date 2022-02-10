@@ -19,7 +19,7 @@ class Header extends StatelessWidget {
           IconButton(
             icon: Icon(Icons.menu),
             onPressed:context.read<MenuController>().controlMenu,
-            color: Color(4278727245) ,
+            color: Colors.indigo,
           ),
         if (!Responsive.isMobile(context))
           Text(
@@ -28,8 +28,16 @@ class Header extends StatelessWidget {
           ),
         if (!Responsive.isMobile(context))
           Spacer(flex: Responsive.isDesktop(context) ? 2 : 1),
-        //Expanded(child: SearchField()),
-        //ProfileCard()
+
+        Container(
+          // flex: 1,
+          child: Text(
+            'DASHBOARD',
+            style:TextStyle(color: Color(4282547648), fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+        ),
+        // Expanded(child: SearchField()),
+        // ProfileCard()
       ],
     );
   }

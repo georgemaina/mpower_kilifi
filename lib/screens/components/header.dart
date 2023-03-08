@@ -1,5 +1,4 @@
-import 'package:mpower/controllers/MenuController.dart';
-import 'package:mpower/responsive.dart';
+import 'package:mpower_achap/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +17,8 @@ class Header extends StatelessWidget {
         if (!Responsive.isDesktop(context))
           IconButton(
             icon: Icon(Icons.menu),
-            onPressed:context.read<MenuController>().controlMenu,
+            onPressed: () {},
+            // onPressed:context.read<showMenu(context: context, position: position, items: items),
             color: Colors.indigo,
           ),
         if (!Responsive.isMobile(context))
@@ -32,8 +32,11 @@ class Header extends StatelessWidget {
         Container(
           // flex: 1,
           child: Text(
-            'DASHBOARD',
-            style:TextStyle(color: Color(4282547648), fontSize: 14, fontWeight: FontWeight.bold),
+            'mPower',
+            style: TextStyle(
+                color: Color(4282547648),
+                fontSize: 14,
+                fontWeight: FontWeight.bold),
           ),
         ),
         // Expanded(child: SearchField()),
@@ -70,7 +73,7 @@ class ProfileCard extends StatelessWidget {
           if (!Responsive.isMobile(context))
             Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
+                  const EdgeInsets.symmetric(horizontal: defaultPadding / 2),
               child: Text("Angelina Jolie"),
             ),
           Icon(Icons.keyboard_arrow_down),

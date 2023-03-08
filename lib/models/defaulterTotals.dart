@@ -1,18 +1,30 @@
-class Users {
-   final int ID;
-   final String names;
-   final String facility;
-   final String mflcode;
+class DefaulterTotals {
+  final String Immunization;
+  final String VitaminA;
+  final String Dewarming;
+  final String GrowthMonitoring;
+  final String Anc;
 
-  Users({
-    required this.ID,
-    required this.names,
-    required this.facility,
-    required this.mflcode,
+  DefaulterTotals({
+    required this.Immunization,
+    required this.VitaminA,
+    required this.Dewarming,
+    required this.GrowthMonitoring,
+    required this.Anc,
   });
 
-  factory Users.fromJson(Map<String, dynamic> json) {
-    return Users(ID:json['ID'],names:json['names'],facility:json['facility'],mflcode:json['mflcode'],
+  factory DefaulterTotals.fromJson(Map<String, dynamic> json) {
+    return DefaulterTotals(
+      Immunization: json['Immunization'].toString(),
+      Dewarming: json['Dewarming'].toString(),
+      VitaminA: json['VitaminA'].toString(),
+      GrowthMonitoring: json['GrowthMonitoring'].toString(),
+      Anc: json['Anc'].toString(),
     );
+  }
+
+  @override
+  String toString() {
+    return 'DefaulterTotals{Immunization: $Immunization, VitaminA: $VitaminA, GrowthMonitoring: $GrowthMonitoring, Anc: $Anc}';
   }
 }

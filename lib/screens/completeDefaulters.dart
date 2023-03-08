@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:mpower/constants.dart';
+import 'package:mpower_achap/constants.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:mpower/main.dart';
-import 'package:mpower/screens/register.dart';
+import 'package:mpower_achap/main.dart';
+import 'package:mpower_achap/screens/register.dart';
 import 'globals.dart' as globals;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:mpower/models/facilities.dart';
+import 'package:mpower_achap/models/facilities.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
 
@@ -413,18 +413,22 @@ class SecondScreen extends State<SecondScreenState> {
                                               child:Column(
                                                 children: [
                                                   DropdownSearch<FacilityModel>(
-                                                    maxHeight: 300,
-                                                    onFind:(filter)=>getFacilities(filter),
+                                                   // maxHeight: 300,
+                                                    //onFind:(filter)=>getFacilities(filter),
+                                                    asyncItems: (String? filter)=>getFacilities(filter),
+                                            dropdownDecoratorProps: DropDownDecoratorProps(
                                                     dropdownSearchDecoration: InputDecoration(
                                                       labelText: "Facility patient received service",
                                                       contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
                                                       border: OutlineInputBorder(),
                                                     ),
+                                            ),
                                                     onChanged: (value){
                                                       mflcode=value!.mflcode.toString();
                                                       serviceLocation=value.facilityname.toString();
                                                     },
-                                                    showSearchBox: true,
+                                                    //showSearchBox: true,
+                                                    popupProps: PopupProps.menu(showSearchBox: true),
                                                   ),
                                                   SizedBox(height: 10.0),
                                                   TextFormField(
@@ -482,18 +486,22 @@ class SecondScreen extends State<SecondScreenState> {
                                                 //   FacilityModel(facilityname: "Offline name1", mflcode: 999),
                                                 //   FacilityModel(facilityname: "Offline name2", mflcode: 101)
                                                 // ],
-                                                maxHeight: 300,
-                                                onFind:(filter)=>getFacilities(filter),
+                                               // maxHeight: 300,
+                                                //onFind:(filter)=>getFacilities(filter),
+                                                asyncItems: (String? filter)=>getFacilities(filter),
+                                                dropdownDecoratorProps: DropDownDecoratorProps(
                                                 dropdownSearchDecoration: InputDecoration(
                                                   labelText: "Refer patient to Facility",
                                                   contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
                                                   border: OutlineInputBorder(),
                                                 ),
+                                                ),
                                                 onChanged: (value){
                                                   mflcode=value!.mflcode.toString();
                                                   facility=value.facilityname.toString();
                                                 },
-                                                showSearchBox: true,
+                                                //showSearchBox: true,
+                                                popupProps: PopupProps.menu(showSearchBox: true),
                                               ),
                                             ),
                                             SizedBox(height: 10.0),

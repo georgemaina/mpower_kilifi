@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mpower_achap/constants.dart';
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
-import 'package:mpower_achap/database.dart';
 import 'package:mpower_achap/main.dart';
 import 'package:mpower_achap/screens/register.dart';
 import 'globals.dart' as globals;
@@ -59,56 +57,8 @@ class MainListView extends StatefulWidget {
 
 class _MainListViewState extends State {
   final String apiURL = globals.url.toString() + 'getDefaulterList';
-  late List<Client> _clients;
-  late List<Client> _defaultersList;
-
-  List<Map<String, dynamic>> _records = [];
-  var totalRecords = 0;
 
   bool loading = true;
-
-  @override
-  void initState() {
-    _clients = [];
-    _defaultersList = [];
-    _getClients();
-    _getDefaulters();
-    super.initState();
-  }
-
-  _getDefaulters() {
-    // _showProgress('Loading Employees...');
-    getDefaultersList().then((defaulters) {
-      setState(() {
-        _defaultersList = defaulters;
-      });
-      // _showProgress(widget.title); // Reset the title...
-      print("Defaulters Length ${defaulters.length}");
-    });
-  }
-
-  _getClients() {
-    // _showProgress('Loading Employees...');
-    fetchClients().then((clients) {
-      setState(() {
-        _clients = clients;
-      });
-      // _showProgress(widget.title); // Reset the title...
-      print("Length ${clients.length}");
-    });
-  }
-
-  Future<List<Client>> getDefaultersList() async {
-    final db = await DBProvider.db();
-    var data = await db.query('defaulters', orderBy: "ID");
-    // var data = await DBProvider.getDefaulters();
-
-    String defaulters = jsonEncode(data);
-    List<Client> defaultersList = parseResponse(defaulters);
-    // print("Defaulters $defaultersList");
-
-    return defaultersList;
-  }
 
   Future<List<Client>> fetchClients() async {
     // print(apiURL);
@@ -116,16 +66,16 @@ class _MainListViewState extends State {
     print(response.statusCode);
 
     if (response.statusCode == 200) {
-      List<Client> clientList = parseResponse(response.body);
+      final items = json.decode(response.body).cast<Map<String, dynamic>>();
+      print(items);
+      List<Client> clientList = items.map<Client>((json) {
+        return Client.fromJson(json);
+      }).toList();
+
       return clientList;
     } else {
       throw Exception('Failed to load data from Server.');
     }
-  }
-
-  static List<Client> parseResponse(String responseBody) {
-    final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
-    return parsed.map<Client>((json) => Client.fromJson(json)).toList();
   }
 
   navigateToNextActivity(BuildContext context, int dataHolder) {
@@ -135,55 +85,47 @@ class _MainListViewState extends State {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: DataTable(
-            columns: [
-              DataColumn(label: Text('ID')),
-              DataColumn(label: Text('Names')),
-              DataColumn(label: Text('Service Defaulted')),
-              // DataColumn(label: Text('CHU')),
-            ],
-            rows: _defaultersList
-                .map(
-                  (client) => DataRow(cells: [
-                    DataCell(
-                      Text(client.ID.toString()),
-                      onTap: () {
-                        navigateToNextActivity(context, client.ID);
-                      },
-                    ),
-                    DataCell(
-                      Text(
-                        client.names,
-                        style: TextStyle(color: Colors.amber),
+    return FutureBuilder<List<Client>>(
+      future: fetchClients(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData)
+          return Center(child: CircularProgressIndicator());
+
+        return ListView(
+          children: snapshot.data!
+              .map((data) => Column(
+                    children: <Widget>[
+                      GestureDetector(
+                        onTap: () {
+                          navigateToNextActivity(context, data.ID);
+                        },
+                        child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 5, 0, 5),
+                                  child: Text('${data.ID}  ${data.names}',
+                                      style: TextStyle(fontSize: 16),
+                                      textAlign: TextAlign.left)),
+                              Expanded(
+                                  child: Padding(
+                                padding: EdgeInsets.fromLTRB(5, 5, 0, 5),
+                                child: Text(
+                                  ' - Service Defaulted ${data.serviceDefaulted}',
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.yellow),
+                                  textAlign: TextAlign.left,
+                                ),
+                              )),
+                            ]),
                       ),
-                      onTap: () {
-                        navigateToNextActivity(context, client.ID);
-                      },
-                    ),
-                    DataCell(
-                      Text(
-                        client.serviceDefaulted,
-                        style: TextStyle(color: Colors.amber),
-                      ),
-                      onTap: () {
-                        navigateToNextActivity(context, client.ID);
-                      },
-                    ),
-                    // DataCell(
-                    //   Text(client.chuName),
-                    //   onTap: () {
-                    //     // navigateToNextActivity(context, client.ID);
-                    //   },
-                    // ),
-                  ]),
-                )
-                .toList(),
-          ),
-        ));
+                      Divider(color: Colors.black),
+                    ],
+                  ))
+              .toList(),
+        );
+      },
+    );
   }
 }
 
@@ -218,7 +160,6 @@ class SecondScreen extends State<SecondScreenState> {
   String mflcode = "";
 
   final String apiURL = globals.url.toString() + 'getDefaulter';
-  late List<Client> _defaultersList;
   int _radioValue1 = -1;
   int correctScore = 0;
   int _radioValue2 = -1;
@@ -257,47 +198,29 @@ class SecondScreen extends State<SecondScreenState> {
     });
   }
 
-  @override
-  void initState() {
-    // _clients = [];
-    _defaultersList = [];
-    // _getClients();
-    _getDefaulters();
-    super.initState();
-  }
-
-  _getDefaulters() {
-    // _showProgress('Loading Employees...');
-    getDefaultersList(idHolder).then((defaulters) {
-      setState(() {
-        _defaultersList = defaulters;
-      });
-      // _showProgress(widget.title); // Reset the title...
-      print("Defaulters Length ${defaulters.length}");
-    });
-  }
-
-  Future<List<Client>> getDefaultersList(String id) async {
-    final db = await DBProvider.db();
-    var data = await db.query('defaulters',
-        where: "ID = ?", whereArgs: [id], limit: 1);
-    // var data = await DBProvider.getDefaulters();
-
-    String defaulters = jsonEncode(data);
-    List<Client> defaultersList = parseResponse(defaulters);
-    print("Defaulters $defaultersList");
-
-    return defaultersList;
-  }
-
   SecondScreen(this.idHolder);
 
-  static List<Client> parseResponse(String responseBody) {
-    final parsed = json.decode(responseBody).cast<Map<String, dynamic>>();
-    return parsed.map<Client>((json) => Client.fromJson(json)).toList();
+  Future<List<Client>> fetchClient() async {
+    var data = {'ID': int.parse(idHolder)};
+
+    var response = await http.post(Uri.parse(apiURL), body: json.encode(data));
+
+    if (response.statusCode == 200) {
+      // print(response.statusCode);
+
+      final items = json.decode(response.body).cast<Map<String, dynamic>>();
+
+      List<Client> clientList = items.map<Client>((json) {
+        return Client.fromJson(json);
+      }).toList();
+
+      return clientList;
+    } else {
+      throw Exception('Failed to load data from Server.');
+    }
   }
 
-  submit(idHolder) {
+  submit() {
     // First validate form.
     var form = formKey.currentState;
     if (form!.validate()) {
@@ -306,51 +229,48 @@ class SecondScreen extends State<SecondScreenState> {
       //   _myActivityResult = _myActivity;
       // });
 
-      this.updateRegister(idHolder);
+      this.updateRegister();
 
-      //print('ID is $idHolder');
-
+      // print('Printing the login data.');
       // print('Mobile: ${_data.username}');
       // print('Password: ${_data.password}');
     }
   }
 
-  Future updateRegister(var idHolder) async {
-    final db = await DBProvider.db();
+  Future updateRegister() async {
+    String url = globals.url.toString() + "updateDefaulter";
 
-    print("ID is $idHolder");
-    var count = await db.update(
-        'defaulters',
-        {
-          "contacted": contacted,
-          "reasonNotContacted": reasonNotContacted.text,
-          "isDefaulter": isDefaulter,
-          "serviceLocation": serviceLocation,
-          "serviceDate": serviceDate,
-          "referTo": referfacility,
-          "mohSerialNo": serialNo,
-          "dateContacted": dateContacted,
-        },
-        where: 'ID = ?',
-        whereArgs: ['$idHolder']);
+    var response = await http.post(Uri.parse(url), body: {
+      "contacted": contacted,
+      "reasonNotContacted": reasonNotContacted.text,
+      "isDefaulter": isDefaulter,
+      "serviceLocation": serviceLocation,
+      "serviceDate": serviceDate,
+      "referTo": referfacility,
+      "mohSerialNo": serialNo,
+      "dateContacted": dateContacted,
+      "ID": idHolder,
+    });
 
-    print('Updated: $count');
+    print(response.body);
+    var data = jsonDecode(response.body);
 
-    if (count > 0) {
+    if (data == "Error") {
+      // Scaffold.of(context).showSnackBar(SnackBar(
+      print('Could not save Defaulter');
+      // ));
+    } else {
       print('Successfully saved defaulter');
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => myMain()));
-    } else {
-      print('Could not save Defaulter');
     }
   }
 
   Future<List<FacilityModel>> getFacilities(filter) async {
-    // var response =
-    //     await http.post(Uri.parse(globals.url.toString() + "getFacilities"));
-    final String response =
-        await rootBundle.loadString('assets/facilities.json');
-    final data = await json.decode(response);
+    var response =
+        await http.post(Uri.parse(globals.url.toString() + "getFacilities"));
+
+    final data = json.decode(response.body);
     //print(data);
     if (data != null) {
       //print(data.length);
@@ -391,7 +311,7 @@ class SecondScreen extends State<SecondScreenState> {
             backgroundColor: Colors.green,
           ),
           body: FutureBuilder<List<Client>>(
-            future: getDefaultersList(idHolder),
+            future: fetchClient(),
             builder: (context, snapshot) {
               print(snapshot.hasData);
               if (!snapshot.hasData)
@@ -696,8 +616,7 @@ class SecondScreen extends State<SecondScreenState> {
                                                         color: Colors.white)),
                                                 onPressed: () {
                                                   // print(serialNo);
-                                                  this.submit(
-                                                      data.ID.toString());
+                                                  this.submit();
                                                 },
                                               ),
                                             )

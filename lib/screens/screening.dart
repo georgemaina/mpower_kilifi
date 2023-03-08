@@ -1,20 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_launcher_icons/android.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:mpower/screens/globals.dart';
-// import 'package:mpower/screens/views/disablity_test.dart';
-import 'package:mpower/welcome.dart';
-// import 'views/enrollment.dart';
-// import 'views/blood_pressure.dart';
-// import 'views/bloodsugar.dart';
-// import 'views/identifiers.dart';
-// import 'views/risk_assessment.dart';
-// import 'views/treatment.dart';
-// import 'views/bmi.dart';
-// import 'views/referral.dart';
-import 'main_screen.dart';
+import 'package:mpower_achap/welcome.dart';
 import '../constants.dart';
 
 class ScreeningHome extends StatefulWidget {

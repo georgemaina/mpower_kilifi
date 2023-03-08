@@ -1,0 +1,26 @@
+   [
+     {
+      "ID": 1,
+      "chuNames": "Ribe",
+      "ward": "Ribe",
+      "linkFacility": "Ribe Dispensary"
+    },
+    {
+      "ID": 2,
+      "chuNames": "Kibwabwani",
+      "ward": "Kibwabwani",
+      "linkFacility": "KINARANI Dispensary"
+    },
+    {
+      "ID": 3,
+      "chuNames": "Kaloleni",
+      "ward": "Kaloleni",
+      "linkFacility": "Kaloleni Hospital"
+    },
+    {
+      "ID": 4,
+      "chuNames": "PEMBA",
+      "ward": "PEMBA",
+      "linkFacility": "PEMBA Dispensary"
+    }
+  ]

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mpower/constants.dart';
+import 'package:mpower_achap/constants.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:mpower/screens/mappedList.dart';
-import 'globals.dart' as globals;
+import 'package:mpower_achap/screens/mappedList.dart';
 import 'household_register.dart';
 
 class MappingVisitType extends StatefulWidget {

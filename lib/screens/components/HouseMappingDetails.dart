@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../constants.dart';
 
 class HouseMappingDetails extends StatefulWidget {
   const HouseMappingDetails({Key? key}) : super(key: key);

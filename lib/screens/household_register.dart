@@ -2,16 +2,15 @@ import 'dart:convert';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:mpower/screens/defaulters.dart';
+import 'package:mpower_achap/database.dart';
 import 'package:http/http.dart' as http;
+import 'package:mpower_achap/screens/mappedList.dart';
 import 'globals.dart' as globals;
-import 'package:provider/provider.dart';
-import 'package:mpower/constants.dart';
+import 'package:mpower_achap/constants.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
-import 'package:mpower/screens/dashboard.dart';
 
 class HouseholdRegister extends StatefulWidget {
   // const Register({Key? key}) : super(key: key);
@@ -32,8 +31,8 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
   TextEditingController chuName = TextEditingController();
   TextEditingController hhNo = TextEditingController();
   TextEditingController yearBirth = TextEditingController();
-  // TextEditingController delivered = TextEditingController();
-  TextEditingController dateDelivered = TextEditingController();
+  String delivered = "";
+  String dateDelivered = "";
   String deliveryPlace ="";
   String sex ="";
   TextEditingController weightAtBirth = TextEditingController();
@@ -44,7 +43,6 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
   TextEditingController otherName = TextEditingController();
   TextEditingController otherContact = TextEditingController();
 
-  String delivered="Yes";
   bool showdeliveryOptions=false;
   bool kmc=false;
   bool isMarried=false;
@@ -61,22 +59,49 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
     // _myActivityResult = '';
   }
 
-  Future registerHousehold()async {
+  Future registerHousehold() async {
+    var id = DBProvider.enrollHouseholds(
+        globals.mothersName,
+        globals.chuName,
+        globals.hhNo,
+        globals.yearBirth,
+        globals.delivered,
+        globals.dateDelivered,
+        globals.deliveryPlace,
+        globals.gender,
+        globals.weightAtBirth,
+        globals.supportGroup,
+        globals.married,
+        globals.spouseName,
+        globals.spouseContact,
+        globals.otherName,
+        globals.otherContact);
+
+    print(id);
+
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => MappedList()));
+  }
+
+  Future registerHousehold2()async {
     String url = globals.url.toString() + "registerHousehold";
     var response = await http.post(Uri.parse(url), body: {
       "dateContacted": strDate,
       "mothersName": mothersName.text,
       "chuName": chuName.text,
       "hhNo": hhNo.text,
-      "dateDelivered": dateDelivered.text,
+      "yearBirth":yearBirth.text,
+      "delivered":delivered,
+      "dateDelivered": dateDelivered,
+      "deliveryPlace":deliveryPlace,
       "sex": sex,
       "weightAtBirth": weightAtBirth.text,
       "supportGroup": supportGroup,
       "married": married,
-      "spouseName": spouseName,
-      "spouseContact": spouseContact,
-      "otherName": otherName,
-      "otherContact": otherContact,
+      "spouseName": spouseName.text,
+      "spouseContact": spouseContact.text,
+      "otherName": otherName.text,
+      "otherContact": otherContact.text,
     });
 
     var data=jsonDecode(response.body);
@@ -86,7 +111,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
       // ));
     }else{
       print('Successfully saved defaulter');
-      Navigator.push(context, MaterialPageRoute(builder: (context)=>Defaulters()));
+      Navigator.push(context, MaterialPageRoute(builder: (context)=>MappedList()));
     }
   }
 
@@ -146,12 +171,19 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                   TextFormField(
                     controller: mothersName,
                     decoration: InputDecoration(
-                      hintText: 'mothers Names',
+                      hintText: 'Mothers Names',
+                      labelText: 'Mothers Names',
                       // suffixIcon: Icon(Icons.email),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
+                    onChanged: (val) {
+                      setState(() {
+                        globals.mothersName = val.toString();
+                        print('Client Names=' + val.toString());
+                      });
+                    },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter Mothers Names';
@@ -165,11 +197,18 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                     controller: chuName,
                     decoration: InputDecoration(
                       hintText: 'CHU Name',
+                      labelText: 'CHU Name',
                       // suffixIcon: Icon(Icons.visibility_off),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
+                    onChanged: (val) {
+                      setState(() {
+                        globals.chuName = val.toString();
+                        print('Client Names=' + val.toString());
+                      });
+                    },
                     validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter CHUs Name';
@@ -183,11 +222,18 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                     controller: hhNo,
                     decoration: InputDecoration(
                       hintText: 'HH No',
+                      labelText: 'HH No',
                       // suffixIcon: Icon(Icons.visibility_off),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
+                    onChanged: (val) {
+                      setState(() {
+                        globals.hhNo = val.toString();
+                        print('Client Names=' + val.toString());
+                      });
+                    },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter HH No';
@@ -201,11 +247,18 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                     controller: yearBirth,
                     decoration: InputDecoration(
                       hintText: 'Year of Birth',
+                      labelText: 'Year of Birth',
                       // suffixIcon: Icon(Icons.visibility_off),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
                     ),
+                    onChanged: (val) {
+                      setState(() {
+                        globals.yearBirth = val.toString();
+                        print('Client Names=' + val.toString());
+                      });
+                    },
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter the Year of birth';
@@ -222,13 +275,15 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                       ],
                       decoration: InputDecoration(
                         labelText: 'Married',
+                        hintText: 'Married',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
                       onChanged: (val) {
                         setState(() {
-                          globals.sex = val.toString();
+                          married = val.toString();
+                          globals.married = val.toString();
                           if(val=='Yes'){
                             isMarried=true;
                             isOther=false;
@@ -240,6 +295,7 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                         });
                       }
                   ),
+                  SizedBox(height:10.0),
                   Visibility(
                     maintainAnimation: true,
                     maintainState: true,
@@ -251,22 +307,36 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                           controller: spouseName,
                           decoration: InputDecoration(
                             hintText: 'Spouse Name',
+                            labelText: 'Spouse Name',
                             // suffixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                           ),
+                          onChanged: (val) {
+                            setState(() {
+                              globals.spouseName = val.toString();
+                              print('Client Names=' + val.toString());
+                            });
+                          },
                         ),
                         SizedBox(height:10.0),
                         TextFormField(
                           controller: spouseContact,
                           decoration: InputDecoration(
                             hintText: 'Spouse Contact',
+                            labelText: 'Spouse Contact',
                             // suffixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                           ),
+                          onChanged: (val) {
+                            setState(() {
+                              globals.spouseContact = val.toString();
+                              print('Spouse Contacts=' + val.toString());
+                            });
+                          },
                         ),
                       ],
                     ),),
@@ -282,41 +352,56 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                           controller: otherName,
                           decoration: InputDecoration(
                             hintText: 'Next of Kin/Guardian',
+                            labelText: 'Next of Kin/Guardian',
                             // suffixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                           ),
+                          onChanged: (val) {
+                            setState(() {
+                              globals.otherName = val.toString();
+                              print('Next of Kin Names=' + val.toString());
+                            });
+                          },
                         ),
                         SizedBox(height:10.0),
                         TextFormField(
                           controller: otherContact,
                           decoration: InputDecoration(
                             hintText: 'Contacts',
+                            labelText: 'Contacts',
                             // suffixIcon: Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                           ),
+                          onChanged: (val) {
+                            setState(() {
+                              globals.otherContact = val.toString();
+                              print('Next of Kin Contacts=' + val.toString());
+                            });
+                          },
                         ),
                       ],
                     ),),
                   SizedBox(height:10.0),
                   FormBuilderRadioGroup(
-                      name: 'contacted',
+                      name: 'delivered',
                       options: [
                         FormBuilderFieldOption(value: 'Yes'),
                         FormBuilderFieldOption(value: 'No'),
                       ],
                       decoration: InputDecoration(
                         labelText: 'Delivered',
+                        hintText: 'Delivered',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                       ),
                       onChanged: (val) {
                         setState(() {
-                          globals.sex = val.toString();
+                          globals.delivered = val.toString();
                           if(val=='Yes'){
                             delivered="Yes";
                             showdeliveryOptions=true;
@@ -340,18 +425,22 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                         FormBuilderDateTimePicker(
                           name: 'deliveryDate',
                           onChanged: (value){
-                            deliveryDate=value.toString();
+                            dateDelivered=value.toString();
+                            globals.dateDelivered = value.toString();
+
                             print(value.toString());
                           },
                           inputType: InputType.date,
                           format: DateFormat('yyyy-MM-dd'),
                           lastDate:DateTime.now(),
                           decoration: InputDecoration(
-                            labelText: 'Date received service',
+                            labelText: 'Date Delivered',
+                            hintText: 'Date Delivered',
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10.0),
                             ),
                           ),
+
                           //initialTime: TimeOfDay(hour: 8, minute: 0),
                           //initialValue: DateTime.now(),
                           enabled: true,
@@ -363,15 +452,18 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                             "Home",
                             "Health Facility"
                           ],
-                          mode: Mode.MENU,
+                          //mode: Mode.MENU,
+                          dropdownDecoratorProps: DropDownDecoratorProps(
                           dropdownSearchDecoration: InputDecoration(
                             hintText: "deliveryPlace",
                             labelText: "deliveryPlace",
                             contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
                             border: OutlineInputBorder(),
                           ),
+                          ),
                           onChanged: (value){
-                            // gathering.text=value.toString();
+                            globals.deliveryPlace = value.toString();
+                            deliveryPlace=value.toString();
                           },
                         ),
                         SizedBox(height:10.0),
@@ -380,15 +472,18 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                             "Male",
                             "Female"
                           ],
-                          mode: Mode.MENU,
+                         // mode: Mode.MENU,
+                          dropdownDecoratorProps: DropDownDecoratorProps(
                           dropdownSearchDecoration: InputDecoration(
                             hintText: "Sex",
                             labelText: "Sex",
                             contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
                             border: OutlineInputBorder(),
                           ),
+                          ),
                           onChanged: (value){
-                            // gathering.text=value.toString();
+                            globals.gender = value.toString();
+                            sex=value.toString();
                           },
                         ),
                         SizedBox(height:10.0),
@@ -396,12 +491,14 @@ class _HouseholdRegisterState extends State<HouseholdRegister> {
                             controller: weightAtBirth,
                             decoration: InputDecoration(
                               hintText: 'Weight at Birth',
+                              labelText: 'Weight at Birth',
                               // suffixIcon: Icon(Icons.email),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(10.0),
                               ),
                             ),
                             onChanged: (val) {
+                              globals.weightAtBirth = val.toString();
                               if(int.parse(val)>2500){
                                 kmc=true;
                               }else{

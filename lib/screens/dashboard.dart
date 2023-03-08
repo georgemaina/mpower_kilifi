@@ -2,9 +2,9 @@
 // import 'package:mpower/screens/components/HouseMappingDetails.dart ';
 // import 'package:mpower/controllers/MenuController.dart';
 import 'package:flutter/material.dart';
-import 'package:mpower/screens/defaulters.dart';
+import 'package:mpower_achap/screens/defaulters.dart';
 // import 'package:google_fonts/google_fonts.dart';
-import 'package:mpower/screens/register.dart';
+import 'mappedList.dart';
 import '../../constants.dart';
 import 'components/header.dart';
 import 'dashlet1.dart';
@@ -43,14 +43,14 @@ class DashboardScreen extends StatelessWidget {
               child:Row(
                 children: [
                   Flexible(
-                    child: Text("View Defaulters List",
+                    child: Text("View House Hold Mapping List",
                       style:TextStyle(fontSize: 16,fontWeight:FontWeight.bold,color: Colors.greenAccent),
                     ),
                   ),
                   Flexible(
                     child: FloatingActionButton(
                       onPressed: () {
-                        Navigator.push(context,MaterialPageRoute(builder: (context) => Defaulters()));
+                        Navigator.push(context,MaterialPageRoute(builder: (context) => MappedList()));
                       },
                       child: const Icon(Icons.add),
                       backgroundColor: Colors.green,

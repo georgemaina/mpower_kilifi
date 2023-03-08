@@ -1,41 +1,40 @@
-// @dart=2.9
-
 class Client {
-  int id;
+  int ID;
   String names;
-  String dob;
+  String age;
   String sex;
   String serviceDefaulted;
   String village;
   String guardian;
-  String contact;
-  String chvname;
+  // int contacts;
+  String chvName;
+  String contacted;
 
   Client({
-    this.id,
-    this.names,
-    this.dob,
-    this.sex,
-    this.serviceDefaulted,
-    this.village,
-    this.guardian,
-    this.contact,
-    this.chvname
+    required this.ID,
+    required this.names,
+    required this.age,
+    required this.sex,
+    required this.serviceDefaulted,
+    required this.village,
+    required this.guardian,
+    // this.contacts,
+    required this.chvName,
+    required this.contacted,
   });
 
-  factory Client.fromJson(Map<String, dynamic> json){
+  factory Client.fromJson(Map<String, dynamic> json) {
     return Client(
-      id: json["id"],
-      names: json["first_name"],
-      dob: json["dob"],
+      ID: json["ID"],
+      names: json["names"],
+      age: ["age"].toString(),
       sex: json["sex"],
       serviceDefaulted: json["serviceDefaulted"],
       village: json["village"],
       guardian: json["guardian"],
-      contact: json["contact"],
-      chvname: json["chvname"],
+      // contacts: json["contacts"],
+      chvName: json["chvName"],
+      contacted: json['contacted'].toString(),
     );
   }
 }
-
-

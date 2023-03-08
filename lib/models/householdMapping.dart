@@ -3,8 +3,8 @@ class HouseholdMapping{
   String dateContacted;
   String mothersName;
   String chuName;
-  int hhNo;
-  int yearBirth;
+  String hhNo;
+  String yearBirth;
   String delivered;
   String dateDelivered;
   String deliveryPlace;

@@ -1,26 +1,29 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'screens/globals.dart' as globals;
-import 'package:mpower/main.dart';
+import 'package:mpower_achap/database.dart';
 import 'package:dropdown_search/dropdown_search.dart';
-import 'package:mpower/models/users.dart';
+import 'package:mpower_achap/models/users.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import 'package:mpower/controllers/MenuController.dart';
+// import 'package:mpower_achap/controllers/MenuController.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mpower/constants.dart';
-import 'package:mpower/screens/main_screen.dart';
-import 'package:mpower/models/facilities.dart';
-
+import 'package:mpower_achap/constants.dart';
+import 'package:mpower_achap/screens/main_screen.dart';
+import 'package:mpower_achap/models/facilities.dart';
+import 'package:flutter/services.dart';
+import 'package:crypto/crypto.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     return super.createHttpClient(context)
       ..badCertificateCallback =
-      ((X509Certificate cert, String host, int port) {
+          ((X509Certificate cert, String host, int port) {
         if (host == globals.ip) {
           return true;
         } else {
@@ -33,6 +36,7 @@ class MyHttpOverrides extends HttpOverrides {
 void main() {
   runApp(MaterialApp(
     home: MyApp(),
+    debugShowCheckedModeBanner: false,
   ));
 }
 
@@ -53,7 +57,8 @@ class myMain extends StatelessWidget {
       home: MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            create: (context) => MenuController(),
+            //create: (context) => MenuController(),
+            create: (context) {},
           ),
         ],
         child: MainScreen(),
@@ -72,7 +77,6 @@ class _LoginData {
   String password = '';
 }
 
-
 class _State extends State<MyApp> {
   TextEditingController username = TextEditingController();
   TextEditingController password = TextEditingController();
@@ -81,10 +85,14 @@ class _State extends State<MyApp> {
   String mflcode = "";
   String chuNames = "";
 
-  bool chu=false;
-  bool facilities=false;
+  List _items = [];
 
-  String _chosenValue="";
+  bool chu = false;
+  bool facilities = false;
+
+  String _chosenValue = "";
+
+
   Future<Position> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -123,58 +131,97 @@ class _State extends State<MyApp> {
     return await Geolocator.getCurrentPosition();
   }
 
-  bool _isObscure=true;
+  bool _isObscure = true;
 
-  Future<Users> login() async{
-    var value;
-    String url=globals.url.toString() + "login";
+  loginSuccess() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => myMain()));
+    if (globals.chw == 'Health Facility') {
+      globals.healthWorker = true;
 
-    var response=await http.post(Uri.parse(url),body: {
-      "username":username.text,
-      "password":password.text,
-      "userGroup":"Admin",
-    });
-
-    var data=jsonDecode(response.body);
-    String user=username.text;
-    if(data=="Error"){
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid Username and Password.'),
-        ),
-      );
-      value='Error';
-    }else{
-      globals.isLoggedIn = true;
-      globals.loggedUser =username.text;
-      value=new Users.fromJson(data);
-      globals.loggedUser=value.names;
-      globals.mflcode=mflcode;
-      globals.facility=facility;
-      globals.phone=username.text;
-      print(facility);
-      // print(location.text);
-      print(globals.chw);
-      Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context)=>myMain())
-      );
-      if(globals.chw=='Health Facility'){
-        globals.healthWorker=true;
-
-        globals.CU=false;
-      }
-      if(globals.chw=='CU'){
-        globals.CU =true;
-        globals.healthWorker=false;
-      }
-      globals.isLoggedIn = true;
+      globals.CU = false;
     }
+    if (globals.chw == 'CU') {
+      globals.CU = true;
+      globals.healthWorker = false;
+    }
+    globals.isLoggedIn = true;
+  }
+
+  Future<Users> login() async {
+    var value;
+    //var data;
+    // print(data);
+
+    bool result = await InternetConnectionChecker().hasConnection;
+    if(result == true) {
+      print('Internet connection is available');
+      String url=globals.url.toString() + "login";
+
+      var response=await http.post(Uri.parse(url),body: {
+        "username":username.text,
+        "password":password.text,
+        "userGroup":"Admin",
+      });
+
+      var data=await jsonDecode(response.body);
+      if(data=="Error"){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid Username and Password.'),
+          ),
+        );
+        value='Error';
+      }else{
+        globals.isLoggedIn = true;
+        globals.loggedUser =username.text;
+        value=new Users.fromJson(data);
+       // print(value['names']);
+        globals.isLoggedIn = true;
+        globals.loggedUser =
+            data['names'] ;
+        globals.mflcode = mflcode;
+        //globals.facility = facility
+        globals.phone = username.text;
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context)=>myMain())
+        );
+      }
+
+    } else {
+        print('No internet :( Reason:');
+        final String response = await rootBundle.loadString('assets/users.json');
+        var data = await json.decode(response);
+        for (var currentUser in data) {
+          String pass = md5.convert(utf8.encode(password.text)).toString();
+          // print("Username is "+ username.text + "  "+pass);
+          if (currentUser['username'] == username.text &&
+              pass == currentUser['password']) {
+            // print("Username is "+pass);
+            globals.isLoggedIn = true;
+            globals.loggedUser =
+                currentUser['firstname'] + " " + currentUser['lastname'];
+            globals.mflcode = mflcode;
+
+            //globals.facility = facility
+            globals.phone = username.text;
+            loginSuccess();
+          }else{
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Invalid Username and Password.'),
+              ),
+            );
+          }
+        }
+    }
+
+
+
     return value;
   }
 
-
-  final formKey =new GlobalKey<FormState>();
+  final formKey = new GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -185,9 +232,8 @@ class _State extends State<MyApp> {
 
   _LoginData _data = new _LoginData();
 
-
   // Map<String, dynamic> formData;
-  void submit(){
+  void submit() {
     // First validate form.
     if (this.formKey.currentState!.validate()) {
       _determinePosition();
@@ -197,28 +243,60 @@ class _State extends State<MyApp> {
       // print('Printing the login data.');
       // print('Mobile: ${_data.username}');
       // print('Password: ${_data.password}');
-
     }
   }
 
+  Future<List<FacilityModel>> readFacilitiesJson(filter) async {
+    final String response =
+        await rootBundle.loadString('assets/facilities.json');
+    final data = await json.decode(response);
+
+    if (data != null) {
+      //print(data.length);
+      return FacilityModel.fromJsonList(data);
+    }
+
+    setState(() {
+      // _items = data["Chus"];
+      FacilityModel.fromJsonList(data);
+    });
+    return [];
+  }
+
   Future<List<FacilityModel>> getFacilities(filter) async {
-    var response = await http.post(
-        Uri.parse(globals.url.toString() + "getFacilities"));
+    var response =
+        await http.post(Uri.parse(globals.url.toString() + "getFacilities"));
 
     final data = json.decode(response.body);
     //print(data);
+
     if (data != null) {
       //print(data.length);
       return FacilityModel.fromJsonList(data);
     }
 
     return [];
+  }
 
+  Future<List<ChuModel>> readChusJson(filter) async {
+    final String response = await rootBundle.loadString('assets/chus.json');
+    final data = await json.decode(response);
+
+    if (data != null) {
+      //print(data.length);
+      return ChuModel.fromJsonList(data);
+    }
+
+    setState(() {
+      _items = data["Chus"];
+      ChuModel.fromJsonList(data);
+    });
+    return [];
   }
 
   Future<List<ChuModel>> getChu(filter) async {
-    var response = await http.post(
-        Uri.parse(globals.url.toString() + "getChu"));
+    var response =
+        await http.post(Uri.parse(globals.url.toString() + "getChu"));
 
     final data = json.decode(response.body);
     //print(data);
@@ -228,7 +306,6 @@ class _State extends State<MyApp> {
     }
 
     return [];
-
   }
 
   @override
@@ -239,8 +316,8 @@ class _State extends State<MyApp> {
         ),
         body: Padding(
             padding: EdgeInsets.all(10),
-            child:Form(
-                key:formKey,
+            child: Form(
+                key: formKey,
                 child: ListView(
                   children: <Widget>[
                     Container(
@@ -270,7 +347,7 @@ class _State extends State<MyApp> {
                         ),
                       ),
                     ),
-                    SizedBox(height:5.0),
+                    SizedBox(height: 5.0),
                     Container(
                       padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
                       child: TextField(
@@ -281,95 +358,109 @@ class _State extends State<MyApp> {
                             labelText: 'Password',
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _isObscure?Icons.visibility:Icons.visibility_off,
+                                _isObscure
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
                               ),
-                              onPressed: (){
+                              onPressed: () {
                                 setState(() {
-                                  _isObscure=!_isObscure;
+                                  _isObscure = !_isObscure;
                                 });
                               },
-                            )
-                        ),
+                            )),
                       ),
                     ),
-                    SizedBox(height:10.0),
+                    SizedBox(height: 10.0),
                     Container(
                       padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
                       child: DropdownSearch(
-                        items: [
-                          "CU",
-                          "Health Facility"
-                        ],
-                        mode: Mode.MENU,
-                        dropdownSearchDecoration: InputDecoration(
-                          hintText: "Location Type",
-                          labelText: "Location Type",
-                          contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
-                          border: OutlineInputBorder(),
+                        items: ["CU", "Health Facility"],
+                        // mode: Mode.MENU,
+                        dropdownDecoratorProps: DropDownDecoratorProps(
+                          dropdownSearchDecoration: InputDecoration(
+                            hintText: "Location Type",
+                            labelText: "Location Type",
+                            contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
+                            border: OutlineInputBorder(),
+                          ),
                         ),
-                        onChanged: (value){
+                        onChanged: (value) {
                           setState(() {
-                            globals.chw=value.toString();
-                            if(value=="CU"){
-                              chu=true;
-                              facilities=false;
+                            globals.chw = value.toString();
+                            if (value == "CU") {
+                              chu = true;
+                              facilities = false;
+                              globals.CU=true;
+                              globals.healthWorker=false;
                             }
-                            if(value=="Health Facility"){
-                              facilities=true;
-                              chu=false;
+                            if (value == "Health Facility") {
+                              facilities = true;
+                              chu = false;
+                              globals.healthWorker=true;
+                              globals.CU=false;
                             }
                           });
                         },
                       ),
                     ),
-                    SizedBox(height:10.0),
+                    SizedBox(height: 10.0),
                     // SizedBox(height:10.0),
                     Visibility(
                         maintainAnimation: true,
                         maintainState: true,
                         visible: chu,
-                        child:  Container(
+                        child: Container(
                           padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
                           child: DropdownSearch<ChuModel>(
-                            maxHeight: 300,
-                            onFind:(filter)=>getChu(filter),
-                            dropdownSearchDecoration: InputDecoration(
-                              labelText: " Community Health Units",
-                              contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
-                              border: OutlineInputBorder(),
+                            // maxHeight: 300,
+                            // onFind:(filter)=>getChu(filter),
+                            asyncItems: (String? filter) =>
+                                readChusJson(filter),
+                            dropdownDecoratorProps: DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                labelText: " Community Health Units",
+                                contentPadding:
+                                    EdgeInsets.fromLTRB(12, 12, 0, 0),
+                                border: OutlineInputBorder(),
+                              ),
                             ),
-                            onChanged: (value){
+                            onChanged: (value) {
                               // ID=value!.ID.toString();
-                              chuNames=value!.chuNames.toString();
+                              chuNames = value!.chuNames.toString();
                             },
-                            showSearchBox: true,
+                            //showSearchBox: true,
+                            popupProps: PopupProps.menu(showSearchBox: true),
                           ),
-                        )
-                    ),
+                        )),
                     // SizedBox(height:10.0),
                     Visibility(
                         maintainAnimation: true,
                         maintainState: true,
                         visible: facilities,
-                        child:  Container(
+                        child: Container(
                           padding: EdgeInsets.fromLTRB(5, 5, 5, 5),
                           child: DropdownSearch<FacilityModel>(
-                            maxHeight: 300,
-                            onFind:(filter)=>getFacilities(filter),
-                            dropdownSearchDecoration: InputDecoration(
-                              labelText: "Link Facility ",
-                              contentPadding: EdgeInsets.fromLTRB(12, 12, 0, 0),
-                              border: OutlineInputBorder(),
+                            // maxHeight: 300,
+                            //onFind:(filter)=>getFacilities(filter),
+                            asyncItems: (String? filter) =>
+                                readFacilitiesJson(filter),
+                            dropdownDecoratorProps: DropDownDecoratorProps(
+                              dropdownSearchDecoration: InputDecoration(
+                                labelText: "Link Facility ",
+                                contentPadding:
+                                    EdgeInsets.fromLTRB(12, 12, 0, 0),
+                                border: OutlineInputBorder(),
+                              ),
                             ),
-                            onChanged: (value){
-                              mflcode=value!.mflcode.toString();
-                              facility=value.facilityname.toString();
+                            onChanged: (value) {
+                              mflcode = value!.mflcode.toString();
+                              facility = value.facilityname.toString();
                             },
-                            showSearchBox: true,
+                            //showSearchBox: true,
+                            popupProps: PopupProps.menu(showSearchBox: true),
                           ),
-                        )
-                    ),
-                    SizedBox(height:10.0),
+                        )),
+                    SizedBox(height: 10.0),
                     // Container(
                     //   padding: EdgeInsets.fromLTRB(5, 5, 5, 0),
                     //   child: TextField(
@@ -391,9 +482,10 @@ class _State extends State<MyApp> {
                     Container(
                         height: 50,
                         padding: EdgeInsets.fromLTRB(5, 0, 5, 0),
-                        child: RaisedButton(
-                          textColor: Colors.white,
-                          color: Colors.blue,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              textStyle: TextStyle(color: Colors.white)),
                           child: Text('LOGIN'),
                           onPressed: () {
                             print(username.text);

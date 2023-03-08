@@ -1,6 +1,6 @@
-import 'package:mpower/constants.dart';
-import 'package:mpower/controllers/MenuController.dart';
-import 'package:mpower/screens/main_screen.dart';
+import 'package:mpower_achap/constants.dart';
+// import 'package:mpower_achap/controllers/MenuController.dart';
+import 'package:mpower_achap/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +21,8 @@ class myMain extends StatelessWidget {
       home: MultiProvider(
         providers: [
           ChangeNotifierProvider(
-            create: (context) => MenuController(),
+            //create: (context) => MenuController(),
+            create: (context){},
           ),
         ],
         child: MainScreen(),

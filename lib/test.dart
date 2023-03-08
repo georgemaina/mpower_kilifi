@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'defaulters.dart';
-import 'mappingVisitType.dart';
 
+void main() => runApp(const MenuBarApp());
 
 /// A class for consolidating the definition of menu entries.
 ///
@@ -111,6 +110,27 @@ class _MyMenuBarState extends State<MyMenuBar> {
             ),
           ],
         ),
+        Expanded(
+          child: Container(
+            alignment: Alignment.center,
+            color: backgroundColor,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Text(
+                    showingMessage ? widget.message : '',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                ),
+                Text(_lastSelection != null
+                    ? 'Last Selected: $_lastSelection'
+                    : ''),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -118,27 +138,29 @@ class _MyMenuBarState extends State<MyMenuBar> {
   List<MenuEntry> _getMenus() {
     final List<MenuEntry> result = <MenuEntry>[
       MenuEntry(
-        label: 'mPower',
+        label: 'Menu Demo',
         menuChildren: <MenuEntry>[
           MenuEntry(
-            label: 'Defaulter Tracing',
+            label: 'About',
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context)=>Defaulters())
+              showAboutDialog(
+                context: context,
+                applicationName: 'MenuBar Sample',
+                applicationVersion: '1.0.0',
               );
               setState(() {
-                _lastSelection = 'Defaulter';
+                _lastSelection = 'About';
               });
             },
           ),
           MenuEntry(
-            label: 'Household Mapping',
+            label: showingMessage ? 'Hide Message' : 'Show Message',
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context)=>MappingVisitType())
-              );
+              setState(() {
+                _lastSelection =
+                showingMessage ? 'Hide Message' : 'Show Message';
+                showingMessage = !showingMessage;
+              });
             },
             shortcut:
             const SingleActivator(LogicalKeyboardKey.keyS, control: true),
@@ -146,11 +168,11 @@ class _MyMenuBarState extends State<MyMenuBar> {
           // Hides the message, but is only enabled if the message isn't
           // already hidden.
           MenuEntry(
-            label: 'Notifications',
+            label: 'Reset Message',
             onPressed: showingMessage
                 ? () {
               setState(() {
-                _lastSelection = 'Notifications';
+                _lastSelection = 'Reset Message';
                 showingMessage = false;
               });
             }
@@ -158,23 +180,42 @@ class _MyMenuBarState extends State<MyMenuBar> {
             shortcut: const SingleActivator(LogicalKeyboardKey.escape),
           ),
           MenuEntry(
-            label: 'Profile',
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context)=>MappingVisitType())
-                );
-              }
-          ),
-          MenuEntry(
-              label: 'Settings',
-              // icons: "assets/icons/menu_setting.svg",
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context)=>MappingVisitType())
-                );
-              }
+            label: 'Background Color',
+            menuChildren: <MenuEntry>[
+              MenuEntry(
+                label: 'Red Background',
+                onPressed: () {
+                  setState(() {
+                    _lastSelection = 'Red Background';
+                    backgroundColor = Colors.red;
+                  });
+                },
+                shortcut: const SingleActivator(LogicalKeyboardKey.keyR,
+                    control: true),
+              ),
+              MenuEntry(
+                label: 'Green Background',
+                onPressed: () {
+                  setState(() {
+                    _lastSelection = 'Green Background';
+                    backgroundColor = Colors.green;
+                  });
+                },
+                shortcut: const SingleActivator(LogicalKeyboardKey.keyG,
+                    control: true),
+              ),
+              MenuEntry(
+                label: 'Blue Background',
+                onPressed: () {
+                  setState(() {
+                    _lastSelection = 'Blue Background';
+                    backgroundColor = Colors.blue;
+                  });
+                },
+                shortcut: const SingleActivator(LogicalKeyboardKey.keyB,
+                    control: true),
+              ),
+            ],
           ),
         ],
       ),
@@ -188,15 +229,15 @@ class _MyMenuBarState extends State<MyMenuBar> {
   }
 }
 
-// class MenuBarApp extends StatelessWidget {
-//   const MenuBarApp({super.key});
-//
-//   static const String kMessage = '"Talk less. Smile more." - A. Burr';
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return const MaterialApp(
-//       home: Scaffold(body: MyMenuBar(message: kMessage)),
-//     );
-//   }
-// }
+class MenuBarApp extends StatelessWidget {
+  const MenuBarApp({super.key});
+
+  static const String kMessage = '"Talk less. Smile more." - A. Burr';
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: Scaffold(body: MyMenuBar(message: kMessage)),
+    );
+  }
+}

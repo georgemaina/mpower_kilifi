@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mpower/database.dart';
+import 'package:mpower_achap/database.dart';
 import 'package:http/http.dart' as http;
-import 'package:mpower/screens/globals.dart' as globals;
-// import 'package:mpower/screens/views/health_workers.dart';
+import 'package:mpower_achap/screens/globals.dart' as globals;
 import 'dart:convert';
 
 class Upload extends StatefulWidget {
@@ -14,219 +13,114 @@ class Upload extends StatefulWidget {
 
 class _UploadState extends State<Upload> {
   List<Map<String, dynamic>> _records = [];
-  int totalRecords=0;
+  int totalRecords = 0;
 
-  void uploadHealthWorkers() async{
-    final bpdata=await DBProvider.getWorkers();
+  void uploadHealthWorkers() async {
+    final bpdata = await DBProvider.getWorkers();
     String url = globals.url.toString() + "uploadHealthWorkers";
-    var response = await http.post(
-        Uri.parse(url),
+    var response = await http.post(Uri.parse(url),
         headers: {"Content-Type": "application/json"},
-        body:jsonEncode(bpdata)
-    );
+        body: jsonEncode(bpdata));
     print(response.body);
 
-    var data=jsonDecode(response.body);
+    var data = jsonDecode(response.body);
     // print(data);
 
-    if(data=="Error"){
+    if (data == "Error") {
       print('Could not Add Health Workers');
-    }else{
+    } else {
       print('Successfully Added Health Workers');
     }
   }
 
-  void uploadEnrollment() async{
-    final bpdata=await DBProvider.getEnrollment();
-    String url = globals.url.toString() + "uploadEnrollment";
-    var response = await http.post(
-        Uri.parse(url),
+  //
+  void uploadDefaulters() async {
+    final bpdata = await DBProvider.getDefaulters();
+    String url = globals.url.toString() + "uploadDefaulters";
+    var response = await http.post(Uri.parse(url),
         headers: {"Content-Type": "application/json"},
-        body:jsonEncode(bpdata)
-    );
-   print(response.body);
+        body: jsonEncode(bpdata));
 
-    var data=jsonDecode(response.body);
-    if(data=="Error"){
-      print('Could not Add Enrollment');
-    }else{
-      print('Successfully Added Enrollment Data');
-    }
-  }
-
-  void uploadCancer() async{
-    final bpdata=await DBProvider.getCancerData();
-    String url = globals.url.toString() + "uploadCancer";
-    var response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body:jsonEncode(bpdata)
-    );
-
-    var data=jsonDecode(response.body);
+    var data = jsonDecode(response.body);
     print(data);
-    if(data=="Error"){
-      print('Could not Add Cancer');
-    }else{
-      print('Successfully Added Cancer Data');
+
+    if (data == "Error") {
+      print('Could not upload Defaulters');
+    } else {
+      print('Successfully Uploaded Defaulters');
     }
   }
 
-  void uploadRetinopathy() async{
-    final bpdata=await DBProvider.getRetinopathyData();
-    String url = globals.url.toString() + "uploadRetinopathy";
-    var response = await http.post(
-        Uri.parse(url),
+
+  void uploadMappingList() async {
+    final bpdata = await DBProvider.getHouseHoldMapping();
+    String url = globals.url.toString() + "uploadMappingList";
+    var response = await http.post(Uri.parse(url),
         headers: {"Content-Type": "application/json"},
-        body:jsonEncode(bpdata)
-    );
+        body: jsonEncode(bpdata));
 
-    var data=jsonDecode(response.body);
-    if(data=="Error"){
-      print('Could not Add Retinopathy');
-    }else{
-      print('Successfully Added Retinopathy Data');
+    var data = jsonDecode(response.body);
+    print(data);
+
+    if (data == "Error") {
+      print('Could not upload Household Mapping data');
+    } else {
+      print('Successfully Uploaded Household Mapping data');
     }
   }
 
-  void uploadEpilepsy() async{
-    final bpdata=await DBProvider.getEpilepsyData();
-    String url = globals.url.toString() + "uploadEpilepsy";
-    var response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body:jsonEncode(bpdata)
-    );
-
-    var data=jsonDecode(response.body);
-    if(data=="Error"){
-      print('Could not Add Epilepsy');
-    }else{
-      print('Successfully Added Epilepsy Data');
-    }
-  }
-
-  void uploadAnaemia() async{
-    final bpdata=await DBProvider.getAnaemiaData();
-    String url = globals.url.toString() + "uploadAnamemia";
-    var response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body:jsonEncode(bpdata)
-    );
-
-    var data=jsonDecode(response.body);
-    if(data=="Error"){
-      print('Could not Add Anaemia');
-    }else{
-      print('Successfully Added Anaemia Data');
-
-    }
-  }
-
-  void uploadHypertensionData() async{
-    final bpdata=await DBProvider.getHypertensionData();
-    String url = globals.url.toString() + "uploadHypertension";
-    var response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body:jsonEncode(bpdata)
-    );
-
-    var data=jsonDecode(response.body);
-    if(data=="Error"){
-      print('Could not Add Hypertension');
-    }else{
-      print('Successfully Added Hypertension Data');
-    }
-  }
-
-  void uploadDiabetes() async{
-    final workers=await DBProvider.getDiabetesData();
-    String url = globals.url.toString() + "uploadDiabetes";
-    var response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body:jsonEncode(workers)
-    );
-
-    print(response.body);
-    var data=jsonDecode(response.body);
-
-    if(data=="Error"){
-      // Scaffold.of(context).showSnackBar(SnackBar(
-      print('Could not Add uploadDiabetes');
-      // ));
-    }else{
-      print('Successfully Added uploadDiabetes');
-
-    }
-  }
-
-  void _getWorkers() async{
-    final data=await DBProvider.countRecords();
+  void _getWorkers() async {
+    final data = await DBProvider.countRecords();
 
     setState(() {
-      _records=data;
-      totalRecords=_records.length;
-      // print(jsonEncode(_records));
+      _records = data;
+      totalRecords = _records.length;
+      print("Total Defaulters $totalRecords");
     });
   }
 
   static Future<int> deleteRows() async {
     final db = await DBProvider.db();
-    db.execute("Delete from enrollments");
-    db.execute("Delete from diabetes");
-    db.execute("Delete from hypertension");
-    db.execute("Delete from anaemia");
-    db.execute("Delete from epilepsy");
-    db.execute("Delete from cancer");
-    db.execute("Delete from health_workers");
+    db.execute("Delete from defaulters");
+    db.execute("Delete from household_mapping");
 
     return 1;
   }
-
 
   @override
   void initState() {
     super.initState();
     _getWorkers();
   }
+
   @override
   Widget build(BuildContext context) {
     return Row(
-        children: [
-          Flexible(
-            child:Text("READY TO UPLOAD : $totalRecords Records",
-              style:TextStyle(fontSize: 16,fontWeight:FontWeight.bold ,color: Colors.yellow),
-            )
-          ),
-          Flexible(
-            child: IconButton(
-              icon:Icon(Icons.upload),
-                iconSize: 35,
-                color: Colors.white,
-                tooltip: 'Upload Records',
-                onPressed:(){
-                    setState(() {
-                      _getWorkers();
-                      uploadDiabetes();
-                      uploadHypertensionData();
-                      uploadAnaemia();
-                      uploadEpilepsy();
-                      uploadRetinopathy();
-                      uploadCancer();
-                      uploadHealthWorkers();
-                      uploadEnrollment();
-                      deleteRows();
-                      // Navigator.push(context, MaterialPageRoute(builder: (context)=>Workers()));
-                    });
-                }
-
-            ),
-          )
-        ],
+      children: [
+        Flexible(
+            child: Text(
+          "READY TO UPLOAD : $totalRecords Records",
+          style: TextStyle(
+              fontSize: 16, fontWeight: FontWeight.bold, color: Colors.yellow),
+        )),
+        Flexible(
+          child: IconButton(
+              icon: Icon(Icons.upload),
+              iconSize: 35,
+              color: Colors.white,
+              tooltip: 'Upload Records',
+              onPressed: () {
+                setState(() {
+                  //  _getWorkers();
+                  uploadDefaulters();
+                  uploadMappingList();
+                  // uploadHealthWorkers();
+                  deleteRows();
+                  // Navigator.push(context, MaterialPageRoute(builder: (context)=>Workers()));
+                });
+              }),
+        )
+      ],
     );
-
   }
 }
